@@ -10,7 +10,7 @@ const gravatar = require('gravatar/lib/gravatar');
 // const config = require('config');
 // @route  POST api/user 
 // @desc  Register user
-// @access public
+// @access publics
 
 router.post(
     '/',
