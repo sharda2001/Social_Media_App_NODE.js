@@ -10,7 +10,7 @@ const user = require('../../models/user');
 
 // @route POST api/post
 // @desc create a post
-// @access private
+// @access privates
 
 router.get('/',[auth,[
     check('text','text is required')
