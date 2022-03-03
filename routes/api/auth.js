@@ -1,102 +1,92 @@
-const  express = require('express')
-const router = express.Router()
-const auth= require('../../middleware/auth')
-const user=require('../../models/user');
-const config=require('config')
-const {check, validationResult } = require('express-validator/check');
+const express = require("express")
+const router=express.Router();
+const auth=require("../../middleware/auth");
+const bcrypt=require("bcryptjs")
+const jwt=require("jsonwebtoken")
+const config = require("config")
+const { check,validationResult }=require("express-validator")
 
-router.get('/',auth,async(req,res)=>{
-    try{
-        const user=await user.findById(req.user.id).select('-password')
-        res.json(user);
+// const user = require("../../models/user");
+
+const User = require("../../models/User");
+// @route   GET api/auth
+// @desc    Test route
+// @access  public
+
+router.get("/",auth,async(req,res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password")  //-password its leaves after the data public
+        res.json(user);                 //findById(req.user.id) is takes from middleware auth
     }catch(err){
         console.error(err.message);
-        res.status(500).send('server Error')
-
+        res.status(500).send("Server Error")
     }
 });
 
+// @route   POST api/users
+// @desc    authentication user and GET token
+// @access  public
+router.post("/",[
 
-router.post(
-    '/',
-    [
-        check('name','name is required')
-        .not()
-        .isEmpty(),
-        // check('email','please include a valid email').isEmail(),
-        check('email').custom(value => {
-            return User.findUserByEmail(value).then(user => {
-              if (user) {
-                return Promise.reject('E-mail already in use');
-              }
-            });
-          }),
-        check(
-            'password',
-            'please enter a password with 6 or more character'
-        ).isLength({min:6 , max:12}),
-        check('password').custom((password, { req }) => {
-            if (password !== req.body.passwordConfirmation) {
-              throw new Error('Password confirmation is incorrect');
-            }
-            return true
-          }),
-    ], 
-    async(req, res) =>{
-        const error=validationResult(req)
-        if(!error.isEmpty()){
-            return res.status(400).json({error:error.array()})
+    check("email","please include a valid email").isEmail(),
+    check(
+        "password",
+        "password is required"
+    ).exists()
+
+],
+async(req,res) => {
+    const errors=validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+
+    const { email,password }=req.body;
+
+    try{
+        // see if user exists
+        let user = await User.findOne({ email })
+
+        if(!user) {
+            // res.send("user route");        
+            return res
+            .status(400)
+            .json({ errors: [ { msg: "Invalid credentials" }]});
         }
-        
-        const {name,email,password}=req.body;
-        try{
-            let user=await User.findOne({email});
-            if(user){
-                return res
-                .status(400).json({errors:[{msg:"User already exist"}]});
-            }
-            const avatar=gravatar.url(email,{
-                s:'200',
-                r:'pg',
-                d:'mm'
-            });
-            user=new user({
-                name,
-                email,
-                avatar,
-                password
-            });
-            const salt=await bcrypt.genSalt(10);
+       
 
-            user.password=await bcrypt.hash(password,salt);
+        // compare return a promise
+        // 1st parameter is a plain password which was given by the user
+        // 2nd is encrypted passwor which was given by the user
+        const isMatch = await bcrypt.compare(password,user.password)
 
-            await user.save();
-
-            const payload={
-                user:{
-                    id:user.id
-                }
-            };
-
-            jwt.sign(
-                payload,
-                config.get('jwtSecret'),
-                {expiresIn:360000},
-                (err,token)=>{
-                    if (err) throw err;
-                    res.json({token})
-                })
-            // res.send('user registered')
-
-        }catch(err){
-            console.error(err.message);
-            res.status(500).send('server error')
-
+        if (!isMatch) {
+            return res
+            .status(400)
+            .json({ errors: [ { msg: "Invalid credentials" }]});
         }
-        
 
-});
+        // return json webtoken
+        // res.send("user registered");
+        const payload = {
+            user: {
+                id:user.id
+            }
+        }
+
+        jwt.sign( 
+            payload, 
+            config.get("jwtSecret"),
+            { expiresIn:360000},
+            (err, token) => {
+                if (err) throw err;
+                res.json({ token });
+            } )
+
+    }catch(err){
+        console.error(err.message);
+        return res.status(500).send("server error");
+    }   
+})
 
 module.exports=router;
-
-// s

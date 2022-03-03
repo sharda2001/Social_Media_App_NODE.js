@@ -3,8 +3,8 @@ const router = express.Router()
 const auth=require('../../middleware/auth')
 const {check, validationResult}=require('express-validator/check')
 
-const profile=require('../../models/profile')
-const user=require('../../models/user')
+const profile=require('../../models/Profile')
+const user=require('../../models/User')
 
 router.get('/me',auth, async (req, res) => {
     try{
