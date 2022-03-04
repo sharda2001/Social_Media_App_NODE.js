@@ -65,7 +65,8 @@ router.post(
         if(status)profileField.status=status
         if(githubusername)profileField.githubusername=githubusername
         if(skills){
-            profileField.skills=skills.split(',').map(skill.trim());
+            console.log("123")
+            profileField.skills=skills.split(',').map(skill=> skill.trim());
         }
         // build socila object
 
@@ -143,7 +144,7 @@ router.get('/',auth, async(req,res)=>{
         }
         res.status(500).send('Server Error')
     }
-})
+});
 
 
 // @route PUT api/profile/experience
