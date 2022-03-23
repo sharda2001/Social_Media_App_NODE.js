@@ -1,16 +1,27 @@
 const  express = require('express');
+
 const router = express.Router();
-const gravtar=require('gravatar');
+// const gravtar=require('gravatar');
 const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
 const config=require('config')
 const {check, validationResult } = require('express-validator/check');
-const User=require('../../models/User');
 const gravatar = require('gravatar/lib/gravatar');
+const User=require('../../models/User');
 // const config = require('config');
 // @route  POST api/user 
 // @desc  Register user
 // @access publics
+
+/** 
+ @api {post} /auth Get user information for the authentication of the user
+ * @apiName postusers
+ * @apiGroup users
+ *
+ * @apiSuccess {String} name, name of the User.
+ * @apiSuccess {String} password, password of the User.
+ * @apiSuccess {String} email, email of the User.
+; */
 
 router.post(
     '/',
@@ -20,15 +31,6 @@ router.post(
         .isEmpty(),
         check('email','please include a valid email').isEmail(),
 
-        check('email').custom(value => {
-            return User.findOne({email:value}).then(user => {
-              if (user) {
-                //   return res 
-                //   .status(400).json({errors:[{email:"user is already exist"}]})
-                return Promise.reject('E-mail already in exist');
-              }
-            });
-          }),
         check(
             'password',
             'please enter a password with 6 or more character'
@@ -38,20 +40,29 @@ router.post(
               throw new Error('Password confirmation is incorrect');
             }
             return true
-          }),
+        }),
+        // email checking
+        check("email").custom(async(email)=>{
+            const user=await User.findOne({email})
+            if(user){
+                throw new Error("email is already exist")
+            }
+            return true
+        })
     ], 
     async(req, res) =>{
         const errors=validationResult(req)
         if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()})
+            res.status(400).json({errors:errors.array()})
+            return
         }
         console.log(req.body)
         const {name,email,password}=req.body;
         try{
             let user=await User.findOne({email});
             if(user){
-                return res
-                .status(400).json({errors:[{msg:"User already exist"}]});
+                res.status(400).json({errors:[{msg:"User already exist"}]});
+                return
             }
             const avatar=gravatar.url(email,{
                 s:'200',

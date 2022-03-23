@@ -1,13 +1,14 @@
-const express = require("express")
-const request = require("request")
-const config = require("config")
+const express = require("express");
+const request = require("request");
+const config = require("config");
+
 const router=express.Router();
-const auth = require("../../middleware/auth");
 const { check, validationResult} = require("express-validator")
+// const { response } = require("express");
+const auth = require("../../middleware/auth");
 
 const Profile = require("../../models/Profile");
 const User = require("../../models/User");
-const { response } = require("express");
 
 
 // @route   GET api/profile/me
@@ -15,19 +16,24 @@ const { response } = require("express");
 // @access  private
 
 /** 
- * @api {get}
- * ...
- 
- router.get('/', (req, res) => {
-    ...
-    }*/
+ @api {get} /profile Get user profile for the user
+ * @apiName Getprofile
+ * @apiGroup profile
+ *
+ * @apiSuccess {String} status, status of the User.
+ * @apiSuccess {String} skill, skills of the User.
+; */
+
+
 router.get("/me",auth,async(req,res) => {
     try {
         const a=await Profile.findOne({ user: req.user.id}).populate("user",
-        ["name","avatar"]);const request = require("request")
+        ["name","avatar"]);
+        
 
         if(!a){
-            return res.status(400).json({ msg: "There is no profile for this user"})
+            res.status(400).json({ msg: "There is no profile for this user"})
+            return
         }
         res.json(a)
     }catch(err){
@@ -51,7 +57,8 @@ router.post("/",auth, [
 async (req, res) => {
     const errors=validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        res.status(400).json({ errors: errors.array() })
+        return
     }
 
     const {
@@ -102,7 +109,8 @@ async (req, res) => {
                 { new: true }
             );
 
-            return res.json(profile)
+            res.json(profile)
+            return
         }
 
         // Create
@@ -142,12 +150,17 @@ router.get("/user/:user_id", async(req,res) => {
     try{
         const profile = await Profile.findOne({ user: req.params.user_id }).populate("user",["name","avatar"]);
 
-        if (!profile) return res.status(400).json({ msg: "profile not found"})
+        if (!profile){
+            res.status(400).json({ msg: "profile not found"})
+            return
+        }
         res.json(profile)
+          
     }catch (err) {
         console.log(err.profilefields)
-        if(err.kind == "objectId"){
-            return res.status(400).json({ msg: "profile not found"})
+        if(err.kind === "objectId"){
+            res.status(400).json({ msg: "profile not found"})
+            return
         }
         res.status(500).send("server Error")
     }
@@ -158,12 +171,12 @@ router.get("/user/:user_id", async(req,res) => {
 // @access  private
 router.delete("/", auth ,async(req,res) => {
     try{
-        //todo remove posts
+        // todo remove posts
 
-        //Remove profile
+        // Remove profile
         await Profile.findOneAndRemove({ user: req.user.id});
 
-         //Remove user
+         // Remove user
         await User.findOneAndRemove({ _id: req.user.id});
 
 
@@ -191,7 +204,8 @@ router.put("/experience",auth,[
 async(req,res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        return res.status(400).json({ errors:array() });
+        res.status(400).json({ errors:errors.array() });
+        return
     }
 
     const {
@@ -218,7 +232,8 @@ async(req,res) => {
         const profile = await Profile.findOne({ user: req.user.id});
 
         if (!profile){
-            return res.status(404).send("For this user profile is not there")
+            res.status(404).send("For this user profile is not there")
+            return
         }
 
         profile.experience.unshift(newExp);
@@ -240,7 +255,7 @@ router.delete('/experience/:exp_id',auth,async(req,res) => {
     try{
         const profile = await  Profile.findOne({ user: req.user.id })
 
-        //Get remove index
+        // Get remove index
         const removeIndex = profile.experience
         .map(item => item.id)
         .indexOf(req.params.exp_id);
@@ -278,7 +293,8 @@ router.put('/education',auth,[
 async(req,res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array() });
+        res.status(400).json({ errors: errors.array() });
+        return
     }
 
     const {
@@ -323,7 +339,7 @@ router.delete('/education/:edu_id',auth,async(req,res) => {
     try{
         const profile = await  Profile.findOne({ user: req.user.id })
 
-        //Get remove index
+        // Get remove index
         const removeIndex = profile.education
         .map(item => item.id)
         .indexOf(req.params.edu_id);
@@ -360,7 +376,8 @@ router.get("/github/:username",(req,res) => {
             if(error) console.error(error);
 
             if(response.statusCode !== 200){
-                return res.status(404).json({ msg: "No Github profile found"})
+                res.status(404).json({ msg: "No Github profile found"})
+                return
             }
 
             res.json(JSON.parse(body))

@@ -1,10 +1,11 @@
 const express = require("express")
+
 const router=express.Router();
-const auth=require("../../middleware/auth");
 const bcrypt=require("bcryptjs")
 const jwt=require("jsonwebtoken")
 const config = require("config")
 const { check,validationResult }=require("express-validator")
+const auth=require("../../middleware/auth");
 
 // const user = require("../../models/user");
 
@@ -13,10 +14,19 @@ const User = require("../../models/User");
 // @desc    Test route
 // @access  public
 
+/** 
+ @api {get} /auth Get user information for the authenticated user
+ * @apiName GetAuth
+ * @apiGroup Auth
+ *
+ * @apiSuccess {String} name,name of the User by findById.
+ * @apiSuccess {String} password, password of the User.
+; */
+
 router.get("/",auth,async(req,res) => {
     try {
-        const user = await User.findById(req.user.id).select("-password")  //-password its leaves after the data public
-        res.json(user);                 //findById(req.user.id) is takes from middleware auth
+        const user = await User.findById(req.user.id).select("-password")  // -password its leaves after the data public
+        res.json(user);                 // findById(req.user.id) is takes from middleware auth
     }catch(err){
         console.error(err.message);
         res.status(500).send("Server Error")
@@ -38,20 +48,20 @@ router.post("/",[
 async(req,res) => {
     const errors=validationResult(req);
     if (!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()})
+        res.status(400).json({errors: errors.array()})
+        return
     }
 
     const { email,password }=req.body;
 
     try{
         // see if user exists
-        let user = await User.findOne({ email })
+        const user = await User.findOne({ email })
 
         if(!user) {
             // res.send("user route");        
-            return res
-            .status(400)
-            .json({ errors: [ { msg: "Invalid credentials" }]});
+            res.status(400).json({ errors: [ { msg: "Invalid credentials" }]});
+            return
         }
        
 
@@ -61,9 +71,8 @@ async(req,res) => {
         const isMatch = await bcrypt.compare(password,user.password)
 
         if (!isMatch) {
-            return res
-            .status(400)
-            .json({ errors: [ { msg: "Invalid credentials" }]});
+            res.status(400).json({ errors: [ { msg: "Invalid credentials" }]});
+            return
         }
 
         // return json webtoken
@@ -85,7 +94,8 @@ async(req,res) => {
 
     }catch(err){
         console.error(err.message);
-        return res.status(500).send("server error");
+        res.status(500).send("server error");
+        
     }   
 })
 

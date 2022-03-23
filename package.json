@@ -4,7 +4,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "start:dev": "nodemon server.js"
+    "start:dev": "nodemon server.js",
+    "generate:doc": "apidoc -i routes/api/ -o doc/",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint:check": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "keywords": [],
   "author": "",
@@ -21,12 +26,17 @@
     "mongodb": "^4.4.0",
     "mongoose": "^5.13.14",
     "multer": "^1.4.4",
-    "nodemon": "^2.0.15",
-    "prettier": "^2.5.1",
     "request": "^2.88.2"
   },
   "description": "",
   "devDependencies": {
-    "apidoc": "^0.50.5"
+    "apidoc": "^0.50.5",
+    "eslint": "^8.11.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.1"
   }
 }
