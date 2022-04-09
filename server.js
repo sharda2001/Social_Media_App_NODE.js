@@ -11,7 +11,7 @@ app.use(express.json({extended:false}))
 // parsing the json body
 
 app.get('/', (req, res) => res.send('API is running'));
-// const port=3000
+
 
 // define routes
 app.use('/api/users',require('./routes/api/users'));
