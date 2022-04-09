@@ -12,7 +12,7 @@ const auth=require("../../middleware/auth");
 const User = require("../../models/User");
 // @route   GET api/auth
 // @desc    Test route
-// @access  public
+// @access  publics
 
 /** 
  @api {get} /auth Get user information for the authenticated user

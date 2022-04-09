@@ -14,7 +14,7 @@ const User = require('../../models/User');
 
 // @route POST api/post
 // @desc create a post
-// @access private
+// @access privates
 
 
 /** 

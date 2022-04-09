@@ -11,7 +11,7 @@ const User=require('../../models/User');
 // const config = require('config');
 // @route  POST api/user 
 // @desc  Register user
-// @access publics
+// @access public
 
 
 /** 
