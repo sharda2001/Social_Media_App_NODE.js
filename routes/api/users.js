@@ -13,6 +13,7 @@ const User=require('../../models/User');
 // @desc  Register user
 // @access publics
 
+
 /** 
  @api {post} /auth Get user information for the authentication of the user
  * @apiName postusers
@@ -22,6 +23,9 @@ const User=require('../../models/User');
  * @apiSuccess {String} password, password of the User.
  * @apiSuccess {String} email, email of the User.
 ; */
+
+
+
 
 router.post(
     '/',
